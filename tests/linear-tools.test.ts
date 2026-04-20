@@ -1,4 +1,5 @@
-import { describe, test, expect, mock } from "bun:test";
+import { describe, test, expect, mock, spyOn, afterEach, afterAll } from "bun:test";
+import * as linearClientModule from "../lib/linear-client";
 
 const mockIssueNodes = [
   {
@@ -29,21 +30,27 @@ const mockSearchNodes = [
   },
 ];
 
-mock.module("../lib/linear-client", () => ({
-  getLinearClient: () => ({
-    users: mock(() =>
-      Promise.resolve({ nodes: [mockUser] })
-    ),
-    issues: mock(() =>
-      Promise.resolve({ nodes: mockSearchNodes })
-    ),
-  }),
-}));
+const mockGetLinearClient = spyOn(linearClientModule, "getLinearClient").mockImplementation(() => ({
+  users: mock(() => Promise.resolve({ nodes: [mockUser] })),
+  issues: mock(() => Promise.resolve({ nodes: mockSearchNodes })),
+} as any));
+
+afterEach(() => {
+  mockGetLinearClient.mockClear();
+});
+
+afterAll(() => {
+  mockGetLinearClient.mockRestore();
+});
 
 const { createLinearTools } = await import("../lib/linear-tools");
 
 describe("getMyLinearIssues", () => {
   test("returns assigned issues for user email", async () => {
+    mockGetLinearClient.mockImplementation(() => ({
+      users: mock(() => Promise.resolve({ nodes: [mockUser] })),
+      issues: mock(() => Promise.resolve({ nodes: mockSearchNodes })),
+    } as any));
     const tools = createLinearTools("alice@example.com");
     const result = await tools.getMyLinearIssues.execute({ status: "all" }, {} as never);
     expect(result.issues).toHaveLength(1);
@@ -58,14 +65,11 @@ describe("getMyLinearIssues", () => {
   });
 
   test("returns error when no Linear user found for email", async () => {
-    mock.module("../lib/linear-client", () => ({
-      getLinearClient: () => ({
-        users: mock(() => Promise.resolve({ nodes: [] })),
-        issues: mock(() => Promise.resolve({ nodes: [] })),
-      }),
-    }));
-    const { createLinearTools: fresh } = await import("../lib/linear-tools");
-    const tools = fresh("unknown@example.com");
+    mockGetLinearClient.mockImplementation(() => ({
+      users: mock(() => Promise.resolve({ nodes: [] })),
+      issues: mock(() => Promise.resolve({ nodes: [] })),
+    } as any));
+    const tools = createLinearTools("unknown@example.com");
     const result = await tools.getMyLinearIssues.execute({ status: "all" }, {} as never);
     expect(result.error).toContain("No Linear user found");
   });
@@ -73,15 +77,11 @@ describe("getMyLinearIssues", () => {
 
 describe("searchLinearIssues", () => {
   test("searches issues by keyword", async () => {
-    // Re-import with original mock
-    mock.module("../lib/linear-client", () => ({
-      getLinearClient: () => ({
-        users: mock(() => Promise.resolve({ nodes: [mockUser] })),
-        issues: mock(() => Promise.resolve({ nodes: mockSearchNodes })),
-      }),
-    }));
-    const { createLinearTools: fresh } = await import("../lib/linear-tools");
-    const tools = fresh("alice@example.com");
+    mockGetLinearClient.mockImplementation(() => ({
+      users: mock(() => Promise.resolve({ nodes: [mockUser] })),
+      issues: mock(() => Promise.resolve({ nodes: mockSearchNodes })),
+    } as any));
+    const tools = createLinearTools("alice@example.com");
     const result = await tools.searchLinearIssues.execute(
       { query: "search result", assignedToMe: false },
       {} as never
