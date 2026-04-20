@@ -1,10 +1,12 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
+import { _resetLinearClientForTesting } from "../lib/linear-client";
 
 describe("getLinearClient", () => {
   const originalEnv = process.env.LINEAR_API_KEY;
 
   beforeEach(() => {
     // Reset module singleton between tests by reimporting
+    _resetLinearClientForTesting();
     delete process.env.LINEAR_API_KEY;
   });
 

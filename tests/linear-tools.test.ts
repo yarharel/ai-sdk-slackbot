@@ -58,7 +58,7 @@ describe("getMyLinearIssues", () => {
       id: "ENG-42",
       title: "Fix login bug",
       status: "In Progress",
-      priority: 1,
+      priority: "Urgent",
       url: "https://linear.app/team/issue/ENG-42",
       team: "Engineering",
     });

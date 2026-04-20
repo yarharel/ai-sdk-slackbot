@@ -11,6 +11,14 @@ const STATE_TYPE_MAP = {
   triage: "triage",
 } as const;
 
+const PRIORITY_MAP: Record<number, string> = {
+  0: "None",
+  1: "Urgent",
+  2: "High",
+  3: "Medium",
+  4: "Low",
+};
+
 type StatusFilter = keyof typeof STATE_TYPE_MAP | "all";
 
 async function resolveLinearUserId(email: string): Promise<string | null> {
@@ -45,7 +53,7 @@ export function createLinearTools(
 
         const filter =
           status !== "all"
-            ? { state: { type: { eq: STATE_TYPE_MAP[status as StatusFilter & keyof typeof STATE_TYPE_MAP] } } }
+            ? { state: { type: { eq: STATE_TYPE_MAP[status as keyof typeof STATE_TYPE_MAP] } } }
             : undefined;
 
         const issues = await user.assignedIssues({ filter });
@@ -58,7 +66,7 @@ export function createLinearTools(
                 id: issue.identifier,
                 title: issue.title,
                 status: state?.name ?? "Unknown",
-                priority: issue.priority,
+                priority: PRIORITY_MAP[issue.priority] ?? "Unknown",
                 url: issue.url,
                 team: team?.name ?? "Unknown",
               };
@@ -72,7 +80,7 @@ export function createLinearTools(
       description:
         "Search Linear issues by keyword across the workspace. Use for questions like 'find issues about payments', 'search for auth bugs'. For 'my issues' prefer getMyLinearIssues.",
       inputSchema: z.object({
-        query: z.string().describe("Keywords to search in issue titles and descriptions"),
+        query: z.string().describe("Keywords to search in issue titles"),
         assignedToMe: z
           .boolean()
           .default(false)
@@ -103,7 +111,7 @@ export function createLinearTools(
                 id: issue.identifier,
                 title: issue.title,
                 status: state?.name ?? "Unknown",
-                priority: issue.priority,
+                priority: PRIORITY_MAP[issue.priority] ?? "Unknown",
                 url: issue.url,
                 team: team?.name ?? "Unknown",
               };

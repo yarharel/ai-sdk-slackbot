@@ -10,3 +10,7 @@ export function getLinearClient(): LinearClient {
   }
   return _linearClient;
 }
+
+export function _resetLinearClientForTesting() {
+  _linearClient = null;
+}

@@ -1,4 +1,5 @@
-import { describe, test, expect, mock } from "bun:test";
+import { describe, test, expect, mock, spyOn, afterEach } from "bun:test";
+import * as slackUtils from "../lib/slack-utils";
 
 // Mock the Slack WebClient
 const mockUsersInfo = mock(() =>
@@ -8,13 +9,14 @@ const mockUsersInfo = mock(() =>
   })
 );
 
-mock.module("@slack/web-api", () => ({
-  WebClient: class {
-    users = { info: mockUsersInfo };
-  },
-}));
+const mockGetClient = spyOn(slackUtils, "getClient").mockImplementation(() => ({
+  users: { info: mockUsersInfo },
+} as any));
 
-// Must import AFTER mock.module
+afterEach(() => {
+  mockGetClient.mockClear();
+});
+
 process.env.SLACK_BOT_TOKEN = "test-token";
 const { getSlackUserEmail } = await import("../lib/slack-utils");
 
