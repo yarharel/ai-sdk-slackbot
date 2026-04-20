@@ -11,15 +11,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ai-sdk/openai": "^1.1.14",
-    "@slack/web-api": "^7.9.3",
-    "@vercel/functions": "^2.0.0",
-    "ai": "^4.1.46",
-    "exa-js": "^1.4.10",
-    "zod": "^3.24.2"
+    "@ai-sdk/openai": "^3.0.53",
+    "@slack/web-api": "^7.15.1",
+    "@vercel/functions": "^3.4.3",
+    "ai": "^6.0.168",
+    "exa-js": "^2.11.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/node": "^20.11.17",
-    "typescript": "^5.3.3"
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3"
   }
 }
