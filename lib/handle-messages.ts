@@ -2,7 +2,7 @@ import type {
   AssistantThreadStartedEvent,
   GenericMessageEvent,
 } from "@slack/web-api";
-import { client, getThread, updateStatusUtil } from "./slack-utils";
+import { getClient, getThread, updateStatusUtil } from "./slack-utils";
 import { generateResponse } from "./generate-response";
 
 export async function assistantThreadMessage(
@@ -12,13 +12,13 @@ export async function assistantThreadMessage(
   console.log(`Thread started: ${channel_id} ${thread_ts}`);
   console.log(JSON.stringify(event));
 
-  await client.chat.postMessage({
+  await getClient().chat.postMessage({
     channel: channel_id,
     thread_ts: thread_ts,
     text: "Hello, I'm an AI assistant built with the AI SDK by Vercel!",
   });
 
-  await client.assistant.threads.setSuggestedPrompts({
+  await getClient().assistant.threads.setSuggestedPrompts({
     channel_id: channel_id,
     thread_ts: thread_ts,
     prompts: [
@@ -53,7 +53,7 @@ export async function handleNewAssistantMessage(
   const messages = await getThread(channel, thread_ts, botUserId);
   const result = await generateResponse(messages, updateStatus);
 
-  await client.chat.postMessage({
+  await getClient().chat.postMessage({
     channel: channel,
     thread_ts: thread_ts,
     text: result,

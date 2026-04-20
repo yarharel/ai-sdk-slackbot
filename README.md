@@ -28,9 +28,7 @@ An AI-powered chatbot for Slack powered by the [AI SDK by Vercel](https://sdk.ve
 ### 1. Install Dependencies
 
 ```bash
-npm install
-# or
-pnpm install
+bun install
 ```
 
 ### 2. Create a Slack App
@@ -95,6 +93,7 @@ Use the [Vercel CLI](https://vercel.com/docs/cli) and [untun](https://github.com
 ```sh
 pnpm i -g vercel
 pnpm vercel dev --listen 3000 --yes
+vercel env run -e preview -- vercel dev
 ```
 
 ```sh

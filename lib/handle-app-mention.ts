@@ -1,12 +1,12 @@
 import { AppMentionEvent } from "@slack/web-api";
-import { client, getThread } from "./slack-utils";
+import { getClient, getThread } from "./slack-utils";
 import { generateResponse } from "./generate-response";
 
 const updateStatusUtil = async (
   initialStatus: string,
   event: AppMentionEvent,
 ) => {
-  const initialMessage = await client.chat.postMessage({
+  const initialMessage = await getClient().chat.postMessage({
     channel: event.channel,
     thread_ts: event.thread_ts ?? event.ts,
     text: initialStatus,
@@ -16,7 +16,7 @@ const updateStatusUtil = async (
     throw new Error("Failed to post initial message");
 
   const updateMessage = async (status: string) => {
-    await client.chat.update({
+    await getClient().chat.update({
       channel: event.channel,
       ts: initialMessage.ts as string,
       text: status,

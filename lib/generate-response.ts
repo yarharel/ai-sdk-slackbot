@@ -1,7 +1,7 @@
 import { openai } from "@ai-sdk/openai";
 import { ModelMessage, generateText, tool, stepCountIs } from "ai";
 import { z } from "zod";
-import { exa } from "./utils";
+import { getExa } from "./utils";
 
 export const generateResponse = async (
   messages: ModelMessage[],
@@ -52,7 +52,7 @@ export const generateResponse = async (
         }),
         execute: async ({ query, specificDomain }) => {
           updateStatus?.(`is searching the web for ${query}...`);
-          const { results } = await exa.searchAndContents(query, {
+          const { results } = await getExa().searchAndContents(query, {
             livecrawl: "always",
             numResults: 3,
             includeDomains: specificDomain ? [specificDomain] : undefined,

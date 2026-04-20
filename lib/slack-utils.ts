@@ -2,9 +2,26 @@ import { WebClient } from '@slack/web-api';
 import { ModelMessage } from 'ai'
 import crypto from 'crypto'
 
-const signingSecret = process.env.SLACK_SIGNING_SECRET!
+let _client: WebClient | null = null;
 
-export const client = new WebClient(process.env.SLACK_BOT_TOKEN);
+export function getClient(): WebClient {
+  if (!_client) {
+    const token = process.env.SLACK_BOT_TOKEN;
+    if (!token) {
+      throw new Error('SLACK_BOT_TOKEN environment variable is not set');
+    }
+    _client = new WebClient(token);
+  }
+  return _client;
+}
+
+function getSigningSecret(): string {
+  const secret = process.env.SLACK_SIGNING_SECRET;
+  if (!secret) {
+    throw new Error('SLACK_SIGNING_SECRET environment variable is not set');
+  }
+  return secret;
+}
 
 // See https://api.slack.com/authentication/verifying-requests-from-slack
 export async function isValidSlackRequest({
@@ -32,7 +49,7 @@ export async function isValidSlackRequest({
 
   const base = `v0:${timestamp}:${rawBody}`
   const hmac = crypto
-    .createHmac('sha256', signingSecret)
+    .createHmac('sha256', getSigningSecret())
     .update(base)
     .digest('hex')
   const computedSignature = `v0=${hmac}`
@@ -61,7 +78,7 @@ export const verifyRequest = async ({
 
 export const updateStatusUtil = (channel: string, thread_ts: string) => {
   return async (status: string) => {
-    await client.assistant.threads.setStatus({
+    await getClient().assistant.threads.setStatus({
       channel_id: channel,
       thread_ts: thread_ts,
       status: status,
@@ -74,7 +91,7 @@ export async function getThread(
   thread_ts: string,
   botUserId: string,
 ): Promise<ModelMessage[]> {
-  const { messages } = await client.conversations.replies({
+  const { messages } = await getClient().conversations.replies({
     channel: channel_id,
     ts: thread_ts,
     limit: 50,
@@ -107,7 +124,7 @@ export async function getThread(
 }
 
 export const getBotId = async () => {
-  const { user_id: botUserId } = await client.auth.test();
+  const { user_id: botUserId } = await getClient().auth.test();
 
   if (!botUserId) {
     throw new Error("botUserId is undefined");
