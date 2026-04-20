@@ -2,17 +2,25 @@ import { openai } from "@ai-sdk/openai";
 import { ModelMessage, generateText, tool, stepCountIs } from "ai";
 import { z } from "zod";
 import { getExa } from "./utils";
+import { createLinearTools } from "./linear-tools";
 
 export const generateResponse = async (
   messages: ModelMessage[],
   updateStatus?: (status: string) => void,
+  userEmail?: string,
 ) => {
+  const linearTools = userEmail
+    ? createLinearTools(userEmail, updateStatus)
+    : {};
+
   const { text } = await generateText({
     model: openai("gpt-4o"),
-    system: `You are a Slack bot assistant Keep your responses concise and to the point.
+    system: `You are a Slack bot assistant. Keep your responses concise and to the point.
     - Do not tag users.
     - Current date is: ${new Date().toISOString().split("T")[0]}
-    - Make sure to ALWAYS include sources in your final response if you use web search. Put sources inline if possible.`,
+    - Make sure to ALWAYS include sources in your final response if you use web search. Put sources inline if possible.
+    - For Linear issue results, format them as a numbered list with title, status, priority (Urgent/High/Medium/Low/None), and a link.
+    ${userEmail ? `- The user's email is ${userEmail}. Use this to query their Linear issues with getMyLinearIssues or searchLinearIssues.` : ""}`,
     messages,
     stopWhen: stepCountIs(10),
     tools: {
@@ -68,6 +76,7 @@ export const generateResponse = async (
           };
         },
       }),
+      ...linearTools,
     },
   });
 
