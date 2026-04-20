@@ -131,3 +131,12 @@ export const getBotId = async () => {
   }
   return botUserId;
 };
+
+export async function getSlackUserEmail(userId: string): Promise<string | null> {
+  try {
+    const result = await getClient().users.info({ user: userId });
+    return result.user?.profile?.email ?? null;
+  } catch {
+    return null;
+  }
+}

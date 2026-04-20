@@ -2,15 +2,18 @@ import type {
   AssistantThreadStartedEvent,
   GenericMessageEvent,
 } from "@slack/web-api";
-import { getClient, getThread, updateStatusUtil } from "./slack-utils";
+import {
+  getClient,
+  getThread,
+  updateStatusUtil,
+  getSlackUserEmail,
+} from "./slack-utils";
 import { generateResponse } from "./generate-response";
 
 export async function assistantThreadMessage(
   event: AssistantThreadStartedEvent,
 ) {
   const { channel_id, thread_ts } = event.assistant_thread;
-  console.log(`Thread started: ${channel_id} ${thread_ts}`);
-  console.log(JSON.stringify(event));
 
   await getClient().chat.postMessage({
     channel: channel_id,
@@ -29,6 +32,14 @@ export async function assistantThreadMessage(
       {
         title: "Get the news",
         message: "What is the latest Premier League news from the BBC?",
+      },
+      {
+        title: "My in-progress issues",
+        message: "Show me my in-progress Linear issues",
+      },
+      {
+        title: "My Linear backlog",
+        message: "What's in my Linear backlog?",
       },
     ],
   });
@@ -50,8 +61,16 @@ export async function handleNewAssistantMessage(
   const updateStatus = updateStatusUtil(channel, thread_ts);
   await updateStatus("is thinking...");
 
-  const messages = await getThread(channel, thread_ts, botUserId);
-  const result = await generateResponse(messages, updateStatus);
+  const [messages, userEmail] = await Promise.all([
+    getThread(channel, thread_ts, botUserId),
+    event.user ? getSlackUserEmail(event.user) : Promise.resolve(null),
+  ]);
+
+  const result = await generateResponse(
+    messages,
+    updateStatus,
+    userEmail ?? undefined,
+  );
 
   await getClient().chat.postMessage({
     channel: channel,

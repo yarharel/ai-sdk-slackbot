@@ -1,5 +1,5 @@
 import { AppMentionEvent } from "@slack/web-api";
-import { getClient, getThread } from "./slack-utils";
+import { getClient, getThread, getSlackUserEmail } from "./slack-utils";
 import { generateResponse } from "./generate-response";
 
 const updateStatusUtil = async (
@@ -29,23 +29,27 @@ export async function handleNewAppMention(
   event: AppMentionEvent,
   botUserId: string,
 ) {
-  console.log("Handling app mention");
-  if (event.bot_id || event.bot_id === botUserId || event.bot_profile) {
-    console.log("Skipping app mention");
-    return;
-  }
+  if (event.bot_id || event.bot_id === botUserId || event.bot_profile) return;
 
   const { thread_ts, channel } = event;
-  const updateMessage = await updateStatusUtil("is thinking...", event);
+  const [updateMessage, userEmail] = await Promise.all([
+    updateStatusUtil("is thinking...", event),
+    event.user ? getSlackUserEmail(event.user) : Promise.resolve(null),
+  ]);
 
   if (thread_ts) {
     const messages = await getThread(channel, thread_ts, botUserId);
-    const result = await generateResponse(messages, updateMessage);
+    const result = await generateResponse(
+      messages,
+      updateMessage,
+      userEmail ?? undefined,
+    );
     await updateMessage(result);
   } else {
     const result = await generateResponse(
       [{ role: "user", content: event.text }],
       updateMessage,
+      userEmail ?? undefined,
     );
     await updateMessage(result);
   }
