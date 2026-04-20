@@ -4,3 +4,5 @@ ai-context
 dist
 .vercel
 .env*.local
+
+.worktrees/
