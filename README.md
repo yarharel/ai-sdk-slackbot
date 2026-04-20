@@ -86,6 +86,31 @@ EXA_API_KEY=your-exa-api-key
 
 Replace the placeholder values with your actual tokens.
 
+### Linear (optional)
+
+| Variable | Where to get it | Purpose |
+|----------|----------------|---------|
+| `LINEAR_API_KEY` | linear.app → Settings → API → Personal API keys | Query Linear issues |
+
+To create a Linear API key:
+1. Go to Linear → Settings → API
+2. Create a new Personal API key
+3. Copy the key (starts with `lin_api_`)
+
+#### Required Slack scope
+
+For per-user issue lookup, the bot needs the `users:read.email` scope:
+1. api.slack.com → your app → OAuth & Permissions → Bot Token Scopes
+2. Add `users:read.email`
+3. Reinstall the app to your workspace
+
+#### What users can ask
+
+- "Show me my in-progress issues"
+- "What's in my Linear backlog?"
+- "Find issues about the payment system"
+- "What are my urgent tasks?"
+
 ## Local Development
 
 Use the [Vercel CLI](https://vercel.com/docs/cli) and [untun](https://github.com/unjs/untun) to test out this project locally:
